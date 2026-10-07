@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#000000">
+<meta name="description" content="实时 Schwarzschild 零测地线光线追踪黑洞：体积吸积盘、光子环、引力透镜、Doppler 增亮与引力红移。">
+<title>GARGANTUA — Schwarzschild Black Hole Raytracer</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23000'/%3E%3Cellipse cx='32' cy='34' rx='29' ry='6' fill='none' stroke='%23ffb35c' stroke-width='3'/%3E%3Ccircle cx='32' cy='32' r='13' fill='%23000' stroke='%23ffd9a0' stroke-width='2'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="./css/style.css">
+<script type="importmap">
+{
+  "imports": {
+    "three": "./vendor/three/three.module.js",
+    "three/addons/": "./vendor/three/addons/"
+  }
+}
+</script>
+</head>
+<body>
+<canvas id="gl" aria-label="黑洞实时光线追踪画面"></canvas>
+
+<div id="ui">
+  <header class="brand">
+    <h1>GARGANTUA</h1>
+    <p class="sub">Schwarzschild Black Hole Raytracer</p>
+    <p class="units">G = c = M = 1 · r<sub>s</sub> = 2M · 零测地线实时积分</p>
+  </header>
+
+  <section id="hud" class="hud" aria-live="off">
+    <div class="row"><span>FPS</span><b id="h-fps">—</b></div>
+    <div class="row opt"><span>帧时</span><b id="h-ms">—</b></div>
+    <div class="row"><span>画质</span><b id="h-q">—</b></div>
+    <div class="row opt"><span>光追分辨率</span><b id="h-res">—</b></div>
+    <div class="sep opt"></div>
+    <div class="row"><span>相机半径</span><b id="h-r">—</b></div>
+    <div class="row"><span>倾角</span><b id="h-inc">—</b></div>
+    <div class="row"><span>时间膨胀 dτ/dt</span><b id="h-dil">—</b></div>
+    <div class="row opt"><span>阴影角半径</span><b id="h-shadow">—</b></div>
+    <div class="row opt"><span>ISCO · 光子球</span><b>6M · 3M</b></div>
+    <div class="row opt"><span>盘面时间</span><b id="h-t">—</b></div>
+    <div class="row mode"><span>视图</span><b id="h-view">—</b></div>
+  </section>
+
+  <nav class="dock" aria-label="视角与控制">
+    <div class="group presets" role="group" aria-label="视角预设">
+      <button data-preset="1" title="Shift+1">掠射</button>
+      <button data-preset="2" title="Shift+2">倾斜</button>
+      <button data-preset="3" title="Shift+3">极向</button>
+      <button data-preset="4" title="Shift+4">近距</button>
+    </div>
+    <div class="group">
+      <button id="b-cine" class="toggle" title="C">● 电影镜头</button>
+      <button id="b-pause" class="toggle" title="Space">❚❚ 时间</button>
+    </div>
+    <div class="group quality" role="group" aria-label="画质">
+      <button data-quality="standard">Standard</button>
+      <button data-quality="high">High</button>
+      <button data-quality="cinematic">Cinematic</button>
+    </div>
+    <div class="group">
+      <button id="b-music" class="toggle" title="M">♪ 氛围音乐</button>
+      <button id="b-shot" title="S">截图</button>
+      <button id="b-panel" class="toggle" title="P">参数</button>
+      <button id="b-help" title="?">?</button>
+    </div>
+  </nav>
+
+  <aside id="panel" class="panel" aria-label="参数面板">
+    <div class="panel-head">
+      <strong>参数 · 21</strong>
+      <div>
+        <button id="b-link" title="复制带参数的链接">复制链接</button>
+        <button id="b-reset" title="R">重置</button>
+        <button id="b-close" aria-label="关闭">×</button>
+      </div>
+    </div>
+    <label class="debug-select">调试视图
+      <select id="s-debug"></select>
+    </label>
+    <div id="params"></div>
+  </aside>
+
+  <div id="debug-tag" class="debug-tag" hidden></div>
+  <div id="cine-tag" class="cine-tag" hidden>CINEMATIC · 拖拽接管镜头</div>
+  <div id="toast" class="toast" role="status"></div>
+
+  <div id="help" class="help" hidden>
+    <div class="help-card">
+      <h2>快捷键</h2>
+      <dl>
+        <dt>拖拽 / 双指</dt><dd>环绕黑洞（自动退出电影镜头）</dd>
+        <dt>滚轮 / 捏合</dt><dd>推近 / 拉远</dd>
+        <dt>Shift + 1–4</dt><dd>视角预设：掠射 · 倾斜 · 极向 · 近距</dd>
+        <dt>0 – 9</dt><dd>调试视图</dd>
+        <dt>C</dt><dd>电影镜头循环</dd>
+        <dt>Space</dt><dd>暂停 / 继续盘面时间</dd>
+        <dt>Q</dt><dd>切换画质 Standard / High / Cinematic</dd>
+        <dt>H</dt><dd>显示 / 隐藏全部界面</dd>
+        <dt>P</dt><dd>参数面板</dd>
+        <dt>M</dt><dd>氛围音乐</dd>
+        <dt>S</dt><dd>保存 PNG 截图</dd>
+        <dt>R</dt><dd>重置参数</dd>
+        <dt>F</dt><dd>全屏</dd>
+        <dt>? / Esc</dt><dd>帮助 / 关闭</dd>
+      </dl>
+      <p class="fine">画面每个像素都在片元着色器中积分一条 Schwarzschild 零测地线，穿过体积吸积盘做发射-吸收积分。</p>
+    </div>
+  </div>
+</div>
+
+<div id="overlay" class="overlay">
+  <div class="ov-card">
+    <div class="spinner"></div>
+    <h2 id="ov-title">正在编译测地线着色器…</h2>
+    <p id="ov-msg">首次编译可能需要数秒。</p>
+    <button id="ov-retry" hidden>重试</button>
+  </div>
+</div>
+
+<noscript><div class="overlay"><div class="ov-card"><h2>需要启用 JavaScript</h2></div></div></noscript>
+<script type="module" src="./js/main.js"></script>
+</body>
+</html>

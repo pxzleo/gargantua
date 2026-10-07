@@ -1,0 +1,12 @@
+{
+  "name": "gargantua",
+  "version": "1.0.0",
+  "description": "GARGANTUA — real-time Schwarzschild black hole raytracer (no build step)",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "node serve.mjs 8080",
+    "test": "python3 tests/run_tests.py"
+  },
+  "license": "MIT"
+}
