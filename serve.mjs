@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Zero-dependency static server:  node serve.mjs [port] [host]   (default 8080, 0.0.0.0 = reachable on the LAN)
+// Zero-dependency static server:  node serve.mjs [port] [host]   (default 8086, 0.0.0.0 = reachable on the LAN)
 import http from 'node:http';
 import os from 'node:os';
 import fs from 'node:fs';
@@ -7,7 +7,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = path.dirname(fileURLToPath(import.meta.url));
-let port = Number(process.argv[2] || process.env.PORT || 8080);
+let port = Number(process.argv[2] || process.env.PORT || 8086);
 const host = process.argv[3] || process.env.HOST || '0.0.0.0';
 const types = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8',

@@ -8,10 +8,10 @@
 
 ```bash
 cd gargantua
-node serve.mjs            # 零依赖静态服务器 → http://localhost:8080/，同时打印局域网地址
-node serve.mjs 8080 127.0.0.1   # 仅本机访问
+node serve.mjs            # 零依赖静态服务器 → http://localhost:8086/，同时打印局域网地址
+node serve.mjs 8086 127.0.0.1   # 仅本机访问
 # 或
-python3 -m http.server 8080
+python3 -m http.server 8086
 ```
 
 需要支持 WebGL2 的浏览器：Chrome、Edge、Firefox，或 Safari 16 及以上。请勿直接双击 `index.html` 用 `file://` 打开，因为 ES Modules 必须通过 HTTP 加载。
@@ -145,7 +145,7 @@ tests/                     Playwright 验收测试、截图工具与结果
 
 就绪信号：`document.documentElement.dataset.ready === "1"`。
 
-示例：`http://localhost:8080/?automation=1&ui=0&quality=high&preset=1&t=40&frames=16`
+示例：`http://localhost:8086/?automation=1&ui=0&quality=high&preset=1&t=40&frames=16`
 
 ### JS 接口 `window.GARGANTUA`
 
@@ -171,7 +171,7 @@ python3 tests/shoot.py "preset=1&quality=high&ui=0" out.png 1920 1080
 
 ```bash
 pip install playwright pillow      # Chromium 需可用（或设 CHROMIUM_PATH）
-node serve.mjs 8080 &
+node serve.mjs 8080 &   # 测试脚本默认连 8080（可用 GARGANTUA_URL 覆盖）
 python3 tests/run_tests.py         # 结果写入 tests/results/（截图 + RESULTS.md + results.json）
 python3 tests/batch_shots.py out/ 1280 720 high   # 预设 + 调试视图联系表
 ```

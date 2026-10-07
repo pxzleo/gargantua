@@ -5,7 +5,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "start": "node serve.mjs 8080",
+    "start": "node serve.mjs 8086",
     "test": "python3 tests/run_tests.py"
   },
   "license": "MIT"
