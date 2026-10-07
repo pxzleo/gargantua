@@ -8,7 +8,8 @@
 
 ```bash
 cd gargantua
-node serve.mjs            # 零依赖静态服务器 → http://localhost:8080/
+node serve.mjs            # 零依赖静态服务器 → http://localhost:8080/，同时打印局域网地址
+node serve.mjs 8080 127.0.0.1   # 仅本机访问
 # 或
 python3 -m http.server 8080
 ```

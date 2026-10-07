@@ -1,12 +1,14 @@
 #!/usr/bin/env node
-// Zero-dependency static server:  node serve.mjs [port]   (default 8080)
+// Zero-dependency static server:  node serve.mjs [port] [host]   (default 8080, 0.0.0.0 = reachable on the LAN)
 import http from 'node:http';
+import os from 'node:os';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 const port = Number(process.argv[2] || process.env.PORT || 8080);
+const host = process.argv[3] || process.env.HOST || '0.0.0.0';
 const types = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8',
   '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.png': 'image/png', '.svg': 'image/svg+xml',
@@ -32,4 +34,13 @@ http.createServer((req, res) => {
     res.writeHead(200, { 'content-type': type, 'content-length': st.size, 'accept-ranges': 'bytes', 'cache-control': 'no-cache' });
     fs.createReadStream(file).pipe(res);
   });
-}).listen(port, () => console.log(`GARGANTUA → http://localhost:${port}/`));
+}).listen(port, host, () => {
+  console.log(`GARGANTUA → http://localhost:${port}/`);
+  if (host === '0.0.0.0' || host === '::') {
+    for (const list of Object.values(os.networkInterfaces())) {
+      for (const a of list || []) {
+        if (a.family === 'IPv4' && !a.internal) console.log(`  LAN    → http://${a.address}:${port}/`);
+      }
+    }
+  }
+});
